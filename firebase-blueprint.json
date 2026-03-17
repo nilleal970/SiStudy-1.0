@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores student profile data, goals, and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "studyArea": { "type": "string" },
+        "dailyGoalHours": { "type": "number" },
+        "weeklyGoalHours": { "type": "number" },
+        "preferredBoard": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Subject": {
+      "title": "Study Subject",
+      "description": "A main discipline like Portuguese or Constitutional Law.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "color": { "type": "string" },
+        "totalTopics": { "type": "number" },
+        "completedTopics": { "type": "number" },
+        "paused": { "type": "boolean" }
+      },
+      "required": ["userId", "name"]
+    },
+    "Topic": {
+      "title": "Study Topic",
+      "description": "A specific topic within a subject.",
+      "type": "object",
+      "properties": {
+        "subjectId": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["not_started", "studying", "completed"] },
+        "lastStudiedAt": { "type": "string", "format": "date-time" },
+        "importance": { "type": "number", "description": "1-5 scale of incidence in exams" }
+      },
+      "required": ["subjectId", "userId", "name"]
+    },
+    "StudySession": {
+      "title": "Study Session",
+      "description": "A logged period of study.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "durationMinutes": { "type": "number" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["manual", "timer", "pomodoro"] }
+      },
+      "required": ["userId", "subjectId", "durationMinutes", "startTime"]
+    },
+    "Revision": {
+      "title": "Revision Task",
+      "description": "A scheduled revision based on spaced repetition.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "scheduledDate": { "type": "string", "format": "date-time" },
+        "completed": { "type": "boolean" },
+        "intervalDays": { "type": "number" }
+      },
+      "required": ["userId", "topicId", "scheduledDate"]
+    },
+    "SimulatedExam": {
+      "title": "Simulated Exam Result",
+      "description": "Results from a mock test.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "totalQuestions": { "type": "number" },
+        "correctAnswers": { "type": "number" },
+        "score": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "performanceBySubject": { "type": "object" }
+      },
+      "required": ["userId", "score", "date"]
+    },
+    "Edital": {
+      "title": "Edital",
+      "description": "Dados de um edital verticalizado",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "concurso": { "type": "string" },
+        "cargo": { "type": "string" },
+        "data": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "concurso", "cargo", "data", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profile documents" },
+    "/subjects/{subjectId}": { "schema": "Subject", "description": "Study subjects" },
+    "/topics/{topicId}": { "schema": "Topic", "description": "Specific study topics" },
+    "/sessions/{sessionId}": { "schema": "StudySession", "description": "Study time logs" },
+    "/revisions/{revisionId}": { "schema": "Revision", "description": "Spaced repetition tasks" },
+    "/exams/{examId}": { "schema": "SimulatedExam", "description": "Mock test results" },
+    "/editais/{editalId}": { "schema": "Edital", "description": "Editais salvos pelos usuários" }
+  }
+}

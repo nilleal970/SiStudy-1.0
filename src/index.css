@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply transition-colors duration-300 bg-stone-50 text-stone-900;
+  }
+}
+
+.dark body {
+  @apply bg-stone-950 text-stone-100;
+}

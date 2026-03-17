@@ -1,0 +1,7 @@
+{
+  "name": "SiStudy",
+  "description": "Assistente inteligente para preparação de concursos públicos com IA, cronômetro, revisões espaçadas e simulados.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

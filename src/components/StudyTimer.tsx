@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Subject } from '../types';
+import { Subject, Topic } from '../types';
 import { db, auth } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { Play, Pause, RotateCcw, Coffee, BookOpen, Save, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -16,11 +16,36 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ subjects }) => {
   const [customTime, setCustomTime] = useState(25);
   const [isActive, setIsActive] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
+  const [selectedTopicId, setSelectedTopicId] = useState('');
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [totalSeconds, setTotalSeconds] = useState(0);
+  const [toast, setToast] = useState<string | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (!selectedSubjectId) {
+      setTopics([]);
+      setSelectedTopicId('');
+      return;
+    }
+    const topicsQuery = query(
+      collection(db, 'topics'),
+      where('subjectId', '==', selectedSubjectId),
+      where('userId', '==', auth.currentUser?.uid)
+    );
+    getDocs(topicsQuery).then(snapshot => {
+      setTopics(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Topic)));
+    });
+  }, [selectedSubjectId]);
   useEffect(() => {
     if (isActive) {
       timerRef.current = setInterval(() => {
@@ -86,20 +111,35 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ subjects }) => {
       await addDoc(collection(db, 'sessions'), {
         userId: auth.currentUser.uid,
         subjectId: selectedSubjectId,
+        topicId: selectedTopicId || null,
         durationMinutes: Math.round(totalSeconds / 60),
         startTime: startTime?.toISOString(),
         endTime: new Date().toISOString(),
         type: type
       });
-      alert('Sessão de estudo salva com sucesso!');
+      setToast('Sessão de estudo salva com sucesso!');
       resetTimer();
     } catch (error) {
       console.error('Error saving session:', error);
+      setToast('Erro ao salvar sessão.');
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-8 right-8 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-lg font-bold z-50"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         {/* Timer Display */}
         <div className="flex flex-col items-center">
@@ -205,11 +245,22 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ subjects }) => {
                 <select 
                   value={selectedSubjectId}
                   onChange={(e) => setSelectedSubjectId(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 font-medium mb-3"
                 >
                   <option value="">Selecione uma disciplina...</option>
                   {subjects.map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+                <select 
+                  value={selectedTopicId}
+                  onChange={(e) => setSelectedTopicId(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                  disabled={!selectedSubjectId}
+                >
+                  <option value="">Selecione um assunto (opcional)...</option>
+                  {topics.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
               </div>

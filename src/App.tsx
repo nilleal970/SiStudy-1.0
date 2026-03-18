@@ -120,17 +120,26 @@ export default function App() {
 
     const subjectsQuery = query(collection(db, 'subjects'), where('userId', '==', user.uid));
     const unsubSubjects = onSnapshot(subjectsQuery, (snapshot) => {
+      console.log('Subjects updated:', snapshot.docs.length);
       setSubjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject)));
+    }, (error) => {
+      console.error('Error fetching subjects:', error);
     });
 
     const sessionsQuery = query(collection(db, 'sessions'), where('userId', '==', user.uid));
     const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
+      console.log('Sessions updated:', snapshot.docs.length);
       setSessions(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as StudySession)));
+    }, (error) => {
+      console.error('Error fetching sessions:', error);
     });
 
     const revisionsQuery = query(collection(db, 'revisions'), where('userId', '==', user.uid), where('completed', '==', false));
     const unsubRevisions = onSnapshot(revisionsQuery, (snapshot) => {
+      console.log('Revisions updated:', snapshot.docs.length);
       setRevisions(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Revision)));
+    }, (error) => {
+      console.error('Error fetching revisions:', error);
     });
 
     return () => {

@@ -77,8 +77,8 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ subjects }) => {
   };
 
   const handleSaveSession = async () => {
-    if (!selectedSubjectId || totalSeconds < 60 || !auth.currentUser) {
-      alert('Selecione uma disciplina e estude pelo menos 1 minuto.');
+    if (!selectedSubjectId || totalSeconds < 10 || !auth.currentUser) {
+      alert('Selecione uma disciplina e estude pelo menos 10 segundos.');
       return;
     }
 
@@ -217,13 +217,13 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ subjects }) => {
               <div className="pt-4">
                 <button 
                   onClick={handleSaveSession}
-                  disabled={totalSeconds < 60}
+                  disabled={totalSeconds < 10}
                   className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <Save className="w-5 h-5" /> Salvar Sessão
                 </button>
                 <p className="text-center text-xs text-stone-400 mt-3">
-                  {totalSeconds > 0 ? `Tempo acumulado: ${Math.floor(totalSeconds / 60)} min` : 'Inicie o timer para registrar seu tempo.'}
+                  {totalSeconds > 0 ? `Tempo acumulado: ${totalSeconds >= 60 ? Math.floor(totalSeconds / 60) + ' min' : totalSeconds + ' seg'}` : 'Inicie o timer para registrar seu tempo.'}
                 </p>
               </div>
             </div>
